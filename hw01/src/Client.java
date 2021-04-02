@@ -1,5 +1,8 @@
 import org.omg.CORBA.*;
 import tasks.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Client {
@@ -43,6 +46,13 @@ public class Client {
             // 5.
             AbstractTask task5 = pt.next();
             System.out.println(task5.info());
+
+            FlipLineTask ft = FlipLineTaskHelper.narrow(task5);
+            reverse(ft, pt.getPolyLine().clone());
+
+            // 6.
+            AbstractTask task6 = ft.next();
+            System.out.println(task6.info());
         } catch (TaskException ex) {
             System.out.printf("Error! %s\n", ex.message);
         }
@@ -72,5 +82,18 @@ public class Client {
             prev = p;
         }
         return res;
+    }
+
+    private static void reverse(FlipLineTask ft, Point[] points) throws TaskException {
+        IntHolder i = new IntHolder();
+        ArrayList<Point> points2 = new ArrayList<>();
+        ft.update(points2.toArray(new Point[0]), i);
+        int index = 0;
+        while (i.value > 0) {
+            Point p = points[index];
+            points2.add(new Point(p.y, p.x));
+            ft.update(points2.toArray(new Point[0]), i);
+            index += 1;
+        }
     }
 }
